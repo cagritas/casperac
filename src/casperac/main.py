@@ -108,7 +108,20 @@ def status():
 @app.command(
     context_settings={"allow_extra_args": True, "ignore_unknown_options": True}
 )
-def run(ctx: typer.Context):
+def run(
+    ctx: typer.Context,
+    mobile: bool = typer.Option(
+        False, "--mobile", help="Spoof a mobile device identity."
+    ),
+    desktop: bool = typer.Option(
+        False, "--desktop", help="Spoof a desktop device identity (Default)."
+    ),
+    browser: str = typer.Option(
+        None,
+        "--browser",
+        help="Spoof a specific browser (e.g. chrome, firefox, safari).",
+    ),
+):
     """
     Run a command with Tor proxy environment variables injected.
     Example: casperac run -- curl -I https://api.github.com/user
@@ -139,7 +152,10 @@ def run(ctx: typer.Context):
             "[bold yellow]Privacy Warning:[/bold yellow] Cloudflare WARP is not active. Your ISP can see you are connecting to Tor. Run `casperac status` to auto-deploy WARP for maximum privacy."
         )
 
-    exit_code = core.run_command_with_proxy(ctx.args)
+    device_type = "mobile" if mobile else "desktop"
+    exit_code = core.run_command_with_proxy(
+        ctx.args, device_type=device_type, browser=browser
+    )
     raise typer.Exit(code=exit_code)
 
 
