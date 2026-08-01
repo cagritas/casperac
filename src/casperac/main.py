@@ -5,6 +5,7 @@ from rich.table import Table
 from casperac import core
 from casperac import warp
 from casperac import tor
+from rich.theme import Theme
 
 BANNER = r"""
 [bold neon_green]
@@ -18,7 +19,6 @@ BANNER = r"""
 [bold purple]Advanced Dual-Layer Network Anonymization[/bold purple]
 """
 
-from rich.theme import Theme
 
 custom_theme = Theme({"neon_green": "color(46)", "purple": "color(135)"})
 console = Console(theme=custom_theme)
