@@ -15,10 +15,26 @@
 
 ---
 
-## ⚡ Features
-- **Status Checks**: Quickly verify your Cloudflare WARP connection and Tor network proxy health.
-- **Command Proxying**: Wrap any terminal command to automatically route it through Tor's `socks5h` proxy, tunneling DNS queries through Tor to prevent leaks.
-- **Circuit Renewal**: Renew your Tor circuit to acquire a fresh exit node IP directly from the CLI.
+CasperAC is an advanced, automated network anonymization CLI tool designed to wrap any terminal command (like `curl`, `nmap`, or `wget`) in a highly secure **Dual-Layer (WARP + Tor)** tunnel. It features a true **Zero-Config Auto-Deploy** engine that installs and configures its own VPN and proxy infrastructure automatically.
+
+## 🌟 The Dual-Layer Privacy Architecture
+
+CasperAC employs a state-of-the-art dual-layer network stack to ensure maximum privacy and prevent Deep Packet Inspection (DPI):
+
+1. **Layer 1: Cloudflare WARP (WireGuard VPN)**
+   - All your system traffic is encrypted and sent to Cloudflare's edge network.
+   - **Why?** Your local Internet Service Provider (ISP) or network administrator cannot see that you are using Tor. They only see a standard Cloudflare connection.
+2. **Layer 2: The Onion Router (Tor)**
+   - Inside the WARP tunnel, CasperAC routes your specific terminal command through the Tor network.
+   - **Why?** The Tor Entry Node sees Cloudflare's IP instead of your real IP. Finally, the target server sees a random Tor Exit Node IP.
+
+**Result:** Your ISP doesn't know you use Tor, the Tor network doesn't know your real IP, and the target server doesn't know who you are.
+
+## ✨ Features
+
+- 🚀 **Zero-Config Auto-Deploy:** If Tor or Cloudflare WARP are not installed, CasperAC automatically downloads, installs, and configures them for you via system package managers (Homebrew/APT).
+- 🛡️ **Dual-Layer Security:** Combines Cloudflare WARP with Tor for ISP-blind, exit-node-anonymized traffic.
+- 🔄 **Dynamic IP Rotation:** Effortlessly renew your Tor circuit with a single command to get a fresh IP address.
 - **Environment Management**: Easily export or unset proxy environment variables for your current active shell session.
 - **Fingerprint Evasion**: Injects standard browser User-Agents into the shell environment to help disguise underlying command fingerprints.
 

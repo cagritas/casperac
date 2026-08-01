@@ -50,6 +50,16 @@ def status():
                 console.print(f"[bold red]✖ Auto-Deploy failed:[/bold red] {msg}")
 
         warp_active = warp.is_warp_active()
+        if not warp_active:
+            console.print(
+                "\n[bold yellow]Cloudflare WARP not detected. Attempting Auto-Deploy for maximum privacy...[/bold yellow]"
+            )
+            success, msg = autodeploy.check_and_deploy_warp()
+            if success:
+                console.print(f"[bold green]✔ {msg}[/bold green]")
+                warp_active = warp.is_warp_active()
+            else:
+                console.print(f"[bold red]✖ WARP Auto-Deploy failed:[/bold red] {msg}")
 
         tor_api_data = {}
         if tor_listening:
@@ -123,6 +133,11 @@ def run(ctx: typer.Context):
                 "[bold yellow]Warning:[/bold yellow] Tor SOCKS port (127.0.0.1:9050) is not listening and Auto-Deploy failed. The command might fail or leak real IP."
             )
             console.print(f"[dim]{msg}[/dim]")
+
+    if not warp.is_warp_active():
+        console.print(
+            "[bold yellow]Privacy Warning:[/bold yellow] Cloudflare WARP is not active. Your ISP can see you are connecting to Tor. Run `casperac status` to auto-deploy WARP for maximum privacy."
+        )
 
     exit_code = core.run_command_with_proxy(ctx.args)
     raise typer.Exit(code=exit_code)

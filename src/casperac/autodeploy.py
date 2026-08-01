@@ -16,6 +16,15 @@ def is_tor_installed() -> bool:
     )
 
 
+def is_warp_cli_installed() -> bool:
+    """Checks if the 'warp-cli' executable is available."""
+    if shutil.which("warp-cli"):
+        return True
+    return os.path.exists(
+        "/Applications/Cloudflare WARP.app/Contents/Resources/warp-cli"
+    )
+
+
 def get_os_type() -> str:
     """Returns the operating system type."""
     return platform.system().lower()
@@ -134,6 +143,87 @@ def check_and_deploy_tor() -> tuple[bool, str]:
         time.sleep(1)
 
     return True, msg + " (Tor was started but hasn't bound to port 9050 yet)"
+
+
+def _get_warp_cli_path() -> str:
+    """Returns the path to warp-cli if it exists, else 'warp-cli'."""
+    if shutil.which("warp-cli"):
+        return "warp-cli"
+    mac_path = "/Applications/Cloudflare WARP.app/Contents/Resources/warp-cli"
+    if os.path.exists(mac_path):
+        return mac_path
+    return "warp-cli"
+
+
+def install_warp_macos() -> tuple[bool, str]:
+    """Installs Cloudflare WARP on macOS using Homebrew Cask."""
+    if not shutil.which("brew"):
+        return False, "Homebrew is not installed. Cannot auto-install WARP."
+    try:
+        subprocess.run(["brew", "install", "--cask", "cloudflare-warp"], check=True)
+        return (
+            True,
+            "Cloudflare WARP installed via Homebrew. You may need to open the app once to approve system extensions.",
+        )
+    except subprocess.CalledProcessError as e:
+        return False, f"WARP installation failed: {e!s}"
+
+
+def install_warp_linux() -> tuple[bool, str]:
+    """Installs Cloudflare WARP on Linux (Ubuntu/Debian)."""
+    if not shutil.which("apt-get"):
+        return (
+            False,
+            "Only apt-based Linux is currently supported for WARP auto-install.",
+        )
+    try:
+        print(
+            "\n[casperac] Root privileges are required to add Cloudflare repository and install WARP."
+        )
+        # Simplified installation for Debian/Ubuntu (assuming curl and gpg exist)
+        cmd = (
+            "curl -fsSL https://pkg.cloudflareclient.com/pubkey.gpg | sudo gpg --yes --dearmor --output /usr/share/keyrings/cloudflare-warp-archive-keyring.gpg && "
+            "echo 'deb [signed-by=/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg] https://pkg.cloudflareclient.com/ jammy main' | sudo tee /etc/apt/sources.list.d/cloudflare-client.list && "
+            "sudo apt-get update && sudo apt-get install -y cloudflare-warp"
+        )
+        subprocess.run(cmd, shell=True, check=True)
+        return True, "Cloudflare WARP installed via apt."
+    except subprocess.CalledProcessError as e:
+        return False, f"WARP installation failed: {e!s}"
+
+
+def check_and_deploy_warp() -> tuple[bool, str]:
+    """
+    Main entry point for WARP autodeploy.
+    Registers device anonymously and connects.
+    """
+    if not is_warp_cli_installed():
+        os_type = get_os_type()
+        if os_type == "darwin":
+            success, msg = install_warp_macos()
+        elif os_type == "linux":
+            success, msg = install_warp_linux()
+        else:
+            return False, "WARP Auto-Deploy only supports macOS and Linux."
+
+        if not success:
+            return False, msg
+
+    warp_bin = _get_warp_cli_path()
+
+    try:
+        # Register anonymously (accepts TOS automatically)
+        subprocess.run(
+            [warp_bin, "registration", "new"], check=False, capture_output=True
+        )
+
+        # Connect to WARP
+        subprocess.run([warp_bin, "connect"], check=False, capture_output=True)
+
+        time.sleep(3)  # Wait for WireGuard tunnel to establish
+        return True, "WARP device registered and tunnel connected successfully."
+    except (subprocess.SubprocessError, OSError) as e:
+        return False, f"Failed to configure WARP: {e!s}"
 
 
 def _is_tor_listening_local() -> bool:
