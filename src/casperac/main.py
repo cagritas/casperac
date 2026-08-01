@@ -37,31 +37,35 @@ def status():
     print_banner()
     with console.status("[bold neon_green]Checking network status..."):
         tor_listening = tor.is_tor_listening()
-
-        if not tor_listening:
-            # Trigger Auto-Deploy
-            console.print(
-                "\n[bold yellow]Tor service not detected. Attempting Auto-Deploy...[/bold yellow]"
-            )
-            success, msg = autodeploy.check_and_deploy_tor()
-            if success:
-                console.print(f"[bold green]✔ {msg}[/bold green]")
-                tor_listening = tor.is_tor_listening()
-            else:
-                console.print(f"[bold red]✖ Auto-Deploy failed:[/bold red] {msg}")
-
         warp_active = warp.is_warp_active()
-        if not warp_active:
-            console.print(
-                "\n[bold yellow]Cloudflare WARP not detected. Attempting Auto-Deploy for maximum privacy...[/bold yellow]"
-            )
-            success, msg = autodeploy.check_and_deploy_warp()
-            if success:
-                console.print(f"[bold green]✔ {msg}[/bold green]")
-                warp_active = warp.is_warp_active()
-            else:
-                console.print(f"[bold red]✖ WARP Auto-Deploy failed:[/bold red] {msg}")
 
+    if not tor_listening:
+        # Trigger Auto-Deploy outside of spinner so sudo prompts work
+        console.print(
+            "\n[bold yellow]Tor service not detected. Attempting Auto-Deploy...[/bold yellow]"
+        )
+        success, msg = autodeploy.check_and_deploy_tor()
+        if success:
+            console.print(f"[bold green]✔ {msg}[/bold green]")
+        else:
+            console.print(f"[bold red]✖ Auto-Deploy failed:[/bold red] {msg}")
+
+    if not warp_active:
+        console.print(
+            "\n[bold yellow]Cloudflare WARP not detected. Attempting Auto-Deploy for maximum privacy...[/bold yellow]"
+        )
+        console.print(
+            "[bold cyan]Note: You may be prompted for your system password to install Cloudflare WARP system extensions.[/bold cyan]"
+        )
+        success, msg = autodeploy.check_and_deploy_warp()
+        if success:
+            console.print(f"[bold green]✔ {msg}[/bold green]")
+        else:
+            console.print(f"[bold red]✖ WARP Auto-Deploy failed:[/bold red] {msg}")
+
+    with console.status("[bold neon_green]Verifying final status..."):
+        tor_listening = tor.is_tor_listening()
+        warp_active = warp.is_warp_active()
         tor_api_data = {}
         if tor_listening:
             tor_api_data = tor.get_tor_status()
@@ -189,10 +193,10 @@ def run(
         raise typer.Exit(code=1)
 
     if not tor.is_tor_listening():
-        with console.status(
-            "[bold neon_green]Tor not detected, attempting Auto-Deploy...[/bold neon_green]"
-        ):
-            success, msg = autodeploy.check_and_deploy_tor()
+        console.print(
+            "\n[bold yellow]Tor not detected, attempting Auto-Deploy...[/bold yellow]"
+        )
+        success, msg = autodeploy.check_and_deploy_tor()
 
         if success:
             console.print(f"[bold green]✔ {msg}[/bold green]")
