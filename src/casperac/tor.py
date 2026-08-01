@@ -1,5 +1,7 @@
 from __future__ import annotations
+
 import socket
+
 import requests
 
 
@@ -50,5 +52,5 @@ def renew_tor_circuit(
             s.sendall(b"SIGNAL NEWNYM\r\n")
             response = s.recv(1024).decode("utf-8")
             return response.startswith("250")
-    except (socket.error, OSError):
+    except OSError:
         return False
