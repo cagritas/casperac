@@ -1,7 +1,6 @@
 from __future__ import annotations
 import socket
 import requests
-from typing import Dict
 
 
 def is_tor_listening(host: str = "127.0.0.1", port: int = 9050) -> bool:
@@ -15,7 +14,7 @@ def is_tor_listening(host: str = "127.0.0.1", port: int = 9050) -> bool:
             return False
 
 
-def get_tor_status() -> Dict:
+def get_tor_status() -> dict:
     """Checks the Tor status using the check.torproject.org API."""
     proxies = {"http": "socks5h://127.0.0.1:9050", "https": "socks5h://127.0.0.1:9050"}
     try:

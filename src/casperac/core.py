@@ -1,12 +1,12 @@
+from __future__ import annotations
 import os
 import subprocess
-from typing import Dict, List
 
 PROXY_URL = "socks5h://127.0.0.1:9050"
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 
 
-def get_proxy_env() -> Dict[str, str]:
+def get_proxy_env() -> dict[str, str]:
     """Returns the environment variables for proxying."""
     env = os.environ.copy()
     env["HTTP_PROXY"] = PROXY_URL
@@ -23,11 +23,11 @@ def get_proxy_env() -> Dict[str, str]:
     return env
 
 
-def run_command_with_proxy(command: List[str]) -> int:
+def run_command_with_proxy(command: list[str]) -> int:
     """Runs a command with proxy environment variables injected."""
     env = get_proxy_env()
     try:
-        result = subprocess.run(command, env=env)
+        result = subprocess.run(command, env=env, check=False)
         return result.returncode
     except FileNotFoundError:
         print(f"Error: Command '{command[0]}' not found.")
