@@ -34,9 +34,44 @@ CasperAC employs a state-of-the-art dual-layer network stack to ensure maximum p
 
 - 🚀 **Zero-Config Auto-Deploy:** If Tor or Cloudflare WARP are not installed, CasperAC automatically downloads, installs, and configures them for you via system package managers (Homebrew/APT).
 - 🛡️ **Dual-Layer Security:** Combines Cloudflare WARP with Tor for ISP-blind, exit-node-anonymized traffic.
+- 🌍 **Global VPN Mode:** Instantly route your entire operating system (all browsers and apps) through the Tor network with a single command (`casperac global-on`).
+- 🕵️‍♂️ **Anti-Detect Engine:** Intelligently evades bot-protection (like Cloudflare) by dynamically injecting realistic browser fingerprints (User-Agents, sec-ch-ua, Accept-Language) into terminal commands.
 - 🔄 **Dynamic IP Rotation:** Effortlessly renew your Tor circuit with a single command to get a fresh IP address.
-- **Environment Management**: Easily export or unset proxy environment variables for your current active shell session.
-- **Fingerprint Evasion**: Injects standard browser User-Agents into the shell environment to help disguise underlying command fingerprints.
+- 💻 **Environment Management:** Easily export or unset proxy environment variables for your current active shell session.
+
+## 🚀 Usage
+
+### 1. Status Check & Auto-Deploy
+Check your network status. If Tor or WARP is missing, CasperAC will auto-deploy them.
+```bash
+casperac status
+```
+
+### 2. Command Proxying (Smart Wrapper)
+Wrap any terminal command to automatically route it through Tor, with dynamic browser fingerprint injection.
+```bash
+casperac run -- curl ifconfig.me
+```
+
+#### Spoof Mobile Identity
+```bash
+casperac run --mobile -- curl ifconfig.me
+```
+
+### 3. Global VPN Mode (System-wide Tor)
+Route your entire operating system (Safari, Chrome, Spotify, OS updates) through the Tor network.
+```bash
+casperac global-on
+```
+To disable and restore normal internet:
+```bash
+casperac global-off
+```
+
+### 4. Circuit Renewal
+```bash
+casperac renew
+```
 
 ## 🚀 Installation
 

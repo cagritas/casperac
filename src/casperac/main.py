@@ -3,7 +3,7 @@ from rich.console import Console
 from rich.table import Table
 from rich.theme import Theme
 
-from casperac import autodeploy, core, tor, warp
+from casperac import autodeploy, core, globalvpn, tor, warp
 
 BANNER = r"""
 [bold neon_green]
@@ -65,6 +65,8 @@ def status():
         if tor_listening:
             tor_api_data = tor.get_tor_status()
 
+        is_global_vpn = globalvpn.is_global_vpn_active()
+
     table = Table(
         title="CasperAC Status", show_header=True, header_style="bold magenta"
     )
@@ -102,7 +104,59 @@ def status():
 
     table.add_row("Tor Network", tor_status, tor_details)
 
+    # Global VPN Status
+    gvpn_status = (
+        "[bold green]Active[/bold green]"
+        if is_global_vpn
+        else "[bold red]Inactive[/bold red]"
+    )
+    table.add_row(
+        "Global VPN Mode", gvpn_status, "Routes entire OS traffic through Tor"
+    )
+
     console.print(table)
+
+
+@app.command()
+def global_on():
+    """Enables Global VPN Mode (routes all OS traffic through Tor)."""
+    print_banner()
+    if not tor.is_tor_listening():
+        console.print(
+            "[bold yellow]Tor is not running. Attempting Auto-Deploy...[/bold yellow]"
+        )
+        success, msg = autodeploy.check_and_deploy_tor()
+        if not success:
+            console.print(
+                f"[bold red]Cannot enable Global VPN. Tor failed to start: {msg}[/bold red]"
+            )
+            raise typer.Exit(code=1)
+
+    with console.status("[bold neon_green]Configuring OS-level SOCKS proxy..."):
+        success, msg = globalvpn.enable_global_vpn()
+
+    if success:
+        console.print(f"[bold green]✔ {msg}[/bold green]")
+        console.print(
+            "[bold yellow]All system traffic (browsers, apps) is now routed through Tor.[/bold yellow]"
+        )
+    else:
+        console.print(f"[bold red]✖ {msg}[/bold red]")
+        raise typer.Exit(code=1)
+
+
+@app.command()
+def global_off():
+    """Disables Global VPN Mode and restores normal OS routing."""
+    print_banner()
+    with console.status("[bold neon_green]Restoring OS-level proxy settings..."):
+        success, msg = globalvpn.disable_global_vpn()
+
+    if success:
+        console.print(f"[bold green]✔ {msg}[/bold green]")
+    else:
+        console.print(f"[bold red]✖ {msg}[/bold red]")
+        raise typer.Exit(code=1)
 
 
 @app.command(
