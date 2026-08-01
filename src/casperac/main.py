@@ -3,7 +3,7 @@ from rich.console import Console
 from rich.table import Table
 from rich.theme import Theme
 
-from casperac import autodeploy, core, globalvpn, tor, warp
+from casperac import antidetect, autodeploy, core, globalvpn, tor, warp
 
 BANNER = r"""
 [bold neon_green]
@@ -242,25 +242,32 @@ def renew():
 @app.command()
 def env_on():
     """Outputs the shell commands to export proxy variables to the current session."""
-    print_banner()
+    # We should not print the banner to stdout if the user is evaluating this (eval $(casperac env-on))
+    # It would cause bash syntax errors.
+
+    headers = antidetect.get_random_identity("desktop")
+    ua = headers.get("User-Agent", "Mozilla/5.0")
+
     print(f"export HTTP_PROXY={core.PROXY_URL}")
     print(f"export HTTPS_PROXY={core.PROXY_URL}")
     print(f"export ALL_PROXY={core.PROXY_URL}")
-    print(f"export HTTP_USER_AGENT='{core.USER_AGENT}'")
-    console.print("\n# To apply to your current shell, run:")
-    console.print("# [bold cyan]eval $(casperac env-on)[/bold cyan]")
+    print(f"export HTTP_USER_AGENT='{ua}'")
+
+    # Send instructions to stderr so it doesn't break eval
+    console.print("\n# To apply to your current shell, run:", stderr=True)
+    console.print("# [bold cyan]eval $(casperac env-on)[/bold cyan]", stderr=True)
 
 
 @app.command()
 def env_off():
     """Outputs the shell commands to unset proxy variables from the current session."""
-    print_banner()
     print("unset HTTP_PROXY")
     print("unset HTTPS_PROXY")
     print("unset ALL_PROXY")
     print("unset HTTP_USER_AGENT")
-    console.print("\n# To apply to your current shell, run:")
-    console.print("# [bold cyan]eval $(casperac env-off)[/bold cyan]")
+
+    console.print("\n# To apply to your current shell, run:", stderr=True)
+    console.print("# [bold cyan]eval $(casperac env-off)[/bold cyan]", stderr=True)
 
 
 if __name__ == "__main__":
