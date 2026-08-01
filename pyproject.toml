@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "casperac"
-version = "0.2.0"
-description = "Advanced zero-config dual-layer network anonymization wrapper (WARP + Tor)."
+version = "0.3.0"
+description = "Advanced zero-config dual-layer network anonymization wrapper (WARP + Tor) with Global VPN and Anti-Detect Engine."
 readme = "README.md"
 requires-python = ">=3.8"
 authors = [

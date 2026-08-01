@@ -22,7 +22,8 @@ custom_theme = Theme({"neon_green": "color(46)", "purple": "color(135)"})
 console = Console(theme=custom_theme)
 
 app = typer.Typer(
-    help="casperac: A dual-layer network anonymization wrapper.", add_completion=False
+    help="CasperAC: A dual-layer network anonymization tool featuring Global VPN, Anti-Detect Engine, and Zero-Config Auto-Deploy.",
+    add_completion=False,
 )
 
 
