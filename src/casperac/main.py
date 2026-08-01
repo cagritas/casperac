@@ -3,7 +3,7 @@ from rich.console import Console
 from rich.table import Table
 from rich.theme import Theme
 
-from casperac import core, tor, warp
+from casperac import autodeploy, core, tor, warp
 
 BANNER = r"""
 [bold neon_green]
@@ -35,8 +35,21 @@ def status():
     """Check the status of WARP and Tor connections."""
     print_banner()
     with console.status("[bold neon_green]Checking network status..."):
-        warp_active = warp.is_warp_active()
         tor_listening = tor.is_tor_listening()
+
+        if not tor_listening:
+            # Trigger Auto-Deploy
+            console.print(
+                "\n[bold yellow]Tor service not detected. Attempting Auto-Deploy...[/bold yellow]"
+            )
+            success, msg = autodeploy.check_and_deploy_tor()
+            if success:
+                console.print(f"[bold green]✔ {msg}[/bold green]")
+                tor_listening = tor.is_tor_listening()
+            else:
+                console.print(f"[bold red]✖ Auto-Deploy failed:[/bold red] {msg}")
+
+        warp_active = warp.is_warp_active()
 
         tor_api_data = {}
         if tor_listening:
@@ -98,9 +111,18 @@ def run(ctx: typer.Context):
         raise typer.Exit(code=1)
 
     if not tor.is_tor_listening():
-        console.print(
-            "[bold yellow]Warning:[/bold yellow] Tor SOCKS port (127.0.0.1:9050) is not listening. The command might fail or leak real IP."
-        )
+        with console.status(
+            "[bold neon_green]Tor not detected, attempting Auto-Deploy...[/bold neon_green]"
+        ):
+            success, msg = autodeploy.check_and_deploy_tor()
+
+        if success:
+            console.print(f"[bold green]✔ {msg}[/bold green]")
+        else:
+            console.print(
+                "[bold yellow]Warning:[/bold yellow] Tor SOCKS port (127.0.0.1:9050) is not listening and Auto-Deploy failed. The command might fail or leak real IP."
+            )
+            console.print(f"[dim]{msg}[/dim]")
 
     exit_code = core.run_command_with_proxy(ctx.args)
     raise typer.Exit(code=exit_code)
