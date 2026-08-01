@@ -30,6 +30,50 @@ CasperAC employs a state-of-the-art dual-layer network stack to ensure maximum p
 
 **Result:** Your ISP doesn't know you use Tor, the Tor network doesn't know your real IP, and the target server doesn't know who you are.
 
+### 📊 Network Data Flow (Dual-Layer Architecture)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    
+    actor User as Your Machine
+    participant ISP as Your Local ISP
+    participant WARP as Cloudflare Edge (Layer 1)
+    participant TorEntry as Tor Entry Node
+    participant TorMiddle as Tor Middle Relay
+    participant TorExit as Tor Exit Node
+    participant Target as Target Server (e.g. github.com)
+
+    User->>ISP: Encrypted WireGuard Packet (Dest: Cloudflare)
+    note left of ISP: Your ISP only sees a secure<br/>connection to Cloudflare.
+    
+    ISP->>WARP: Forwards data to Cloudflare Edge
+    note over WARP,TorEntry: WARP (Layer 1) hides your<br/>Real IP from the Tor Network.
+    
+    WARP->>TorEntry: Enters Tor Network (Source IP: Cloudflare)
+    note right of TorEntry: Tor Entry Node thinks the traffic<br/>is originating from Cloudflare.
+    
+    TorEntry->>TorMiddle: 3-Layer Encrypted (Onion) Data
+    TorMiddle->>TorExit: Hops within the Tor Network
+    
+    note over TorExit,Target: Tor (Layer 2) hides your identity<br/>from the Target Server.
+    TorExit->>Target: Connects to Target (Source IP: Tor Exit Node)
+    
+    note right of Target: The target server only sees the<br/>random Tor Exit Node IP.
+    
+    Target-->>TorExit: Returns Response
+    TorExit-->>TorMiddle: 
+    TorMiddle-->>TorEntry: 
+    TorEntry-->>WARP: 
+    WARP-->>ISP: 
+    ISP-->>User: Terminal Output (cURL/Wget) Success
+```
+
+### 🔍 Why is this better than just using Tor?
+1. **Blind ISP (Layer 1):** If you only use Tor, your Internet Service Provider (ISP) knows you are connecting to the Tor network. With CasperAC, your ISP only sees standard, encrypted Cloudflare WARP traffic.
+2. **Blind Tor Entry Node (Layer 2):** In a normal Tor setup, the first node (Entry Node) knows your real home IP address. With CasperAC, the Tor network thinks you are connecting from a Cloudflare data center. Your real IP never touches the Tor network.
+3. **Blind Target Server:** The destination server only sees a random Tor Exit Node IP and a spoofed `User-Agent` (thanks to the Anti-Detect Engine), keeping you completely anonymous.
+
 ## ✨ Features
 
 - 🚀 **Zero-Config Auto-Deploy:** If Tor or Cloudflare WARP are not installed, CasperAC automatically downloads, installs, and configures them for you via system package managers (Homebrew/APT).
