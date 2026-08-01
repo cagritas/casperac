@@ -1,12 +1,12 @@
 <div align="center">
-  <img src="assets/logo.jpg" alt="CasperAC Logo" width="100%"/>
+  <img src="https://raw.githubusercontent.com/cagritas/casperac/main/assets/logo.jpg" alt="CasperAC Logo" width="100%"/>
 
   <h1>CasperAC</h1>
   
   <p><strong>Advanced Dual-Layer Network Anonymization CLI</strong></p>
 
   <p>
-    <a href="https://github.com/yourusername/casperac/actions"><img src="https://img.shields.io/github/actions/workflow/status/yourusername/casperac/ci.yml?branch=main" alt="Build Status"></a>
+    <a href="https://github.com/cagritas/casperac/actions"><img src="https://img.shields.io/github/actions/workflow/status/cagritas/casperac/ci.yml?branch=main" alt="Build Status"></a>
     <a href="https://pypi.org/project/casperac/"><img src="https://img.shields.io/pypi/v/casperac.svg" alt="PyPI Version"></a>
     <a href="https://pypi.org/project/casperac/"><img src="https://img.shields.io/pypi/pyversions/casperac.svg" alt="Python Versions"></a>
     <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
@@ -88,7 +88,7 @@ pip install casperac
 
 ### Setup from Source
 ```bash
-git clone https://github.com/yourusername/casperac.git
+git clone https://github.com/cagritas/casperac.git
 cd casperac
 pip install -e .
 ```
@@ -114,7 +114,7 @@ eval $(casperac env-off)
 
 ## 🤝 Contributing
 Contributions, issues and feature requests are welcome!
-Feel free to check [issues page](https://github.com/yourusername/casperac/issues). You can also take a look at the [contributing guide](CONTRIBUTING.md).
+Feel free to check [issues page](https://github.com/cagritas/casperac/issues). You can also take a look at the [contributing guide](CONTRIBUTING.md).
 
 ## 📝 License
 Copyright © 2024.

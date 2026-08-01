@@ -2,7 +2,10 @@ LICENSE
 README.md
 pyproject.toml
 src/casperac/__init__.py
+src/casperac/antidetect.py
+src/casperac/autodeploy.py
 src/casperac/core.py
+src/casperac/globalvpn.py
 src/casperac/main.py
 src/casperac/tor.py
 src/casperac/warp.py
