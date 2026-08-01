@@ -1,0 +1,81 @@
+Metadata-Version: 2.4
+Name: casperac
+Version: 0.1.0
+Summary: A dual-layer network anonymization wrapper.
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: typer[all]>=0.9.0
+Requires-Dist: rich>=13.0.0
+Requires-Dist: requests[socks]>=2.31.0
+Dynamic: license-file
+
+<div align="center">
+  <img src="assets/logo.jpg" alt="CasperAC Logo" width="100%"/>
+
+  <h1>CasperAC</h1>
+  
+  <p><strong>Advanced Dual-Layer Network Anonymization CLI</strong></p>
+
+  <p>
+    <a href="https://github.com/yourusername/casperac/actions"><img src="https://img.shields.io/github/actions/workflow/status/yourusername/casperac/ci.yml?branch=main" alt="Build Status"></a>
+    <a href="https://pypi.org/project/casperac/"><img src="https://img.shields.io/pypi/v/casperac.svg" alt="PyPI Version"></a>
+    <a href="https://pypi.org/project/casperac/"><img src="https://img.shields.io/pypi/pyversions/casperac.svg" alt="Python Versions"></a>
+    <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
+  </p>
+</div>
+
+---
+
+## ⚡ Features
+- **Status Checks**: Quickly verify your Cloudflare WARP connection and Tor network proxy health.
+- **Command Proxying**: Wrap any terminal command to automatically route it through Tor's `socks5h` proxy, tunneling DNS queries through Tor to prevent leaks.
+- **Circuit Renewal**: Renew your Tor circuit to acquire a fresh exit node IP directly from the CLI.
+- **Environment Management**: Easily export or unset proxy environment variables for your current active shell session.
+- **Fingerprint Evasion**: Injects standard browser User-Agents into the shell environment to help disguise underlying command fingerprints.
+
+## 🚀 Installation
+
+### Prerequisites
+- Python 3.8+
+- [Tor](https://www.torproject.org/) daemon installed and running locally on port 9050. Control port on 9051.
+- [Cloudflare WARP CLI](https://developers.cloudflare.com/warp-client/get-started/linux/) (optional, but recommended for the dual-layer approach).
+
+### Setup via PyPI (Recommended)
+```bash
+pip install casperac
+```
+
+### Setup from Source
+```bash
+git clone https://github.com/yourusername/casperac.git
+cd casperac
+pip install -e .
+```
+
+## 💻 Usage
+
+```bash
+# Check the status of your proxies
+casperac status
+
+# Run a specific command through the proxy chain
+casperac run -- curl -I https://api.github.com/user
+
+# Renew your Tor exit node
+casperac renew
+
+# Source proxy variables into your active shell session
+eval $(casperac env-on)
+
+# Revert proxy variables
+eval $(casperac env-off)
+```
+
+## 🤝 Contributing
+Contributions, issues and feature requests are welcome!
+Feel free to check [issues page](https://github.com/yourusername/casperac/issues). You can also take a look at the [contributing guide](CONTRIBUTING.md).
+
+## 📝 License
+Copyright © 2024.
+This project is [MIT](LICENSE) licensed.

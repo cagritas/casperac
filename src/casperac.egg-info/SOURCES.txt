@@ -1,0 +1,14 @@
+LICENSE
+README.md
+pyproject.toml
+src/casperac/__init__.py
+src/casperac/core.py
+src/casperac/main.py
+src/casperac/tor.py
+src/casperac/warp.py
+src/casperac.egg-info/PKG-INFO
+src/casperac.egg-info/SOURCES.txt
+src/casperac.egg-info/dependency_links.txt
+src/casperac.egg-info/entry_points.txt
+src/casperac.egg-info/requires.txt
+src/casperac.egg-info/top_level.txt
