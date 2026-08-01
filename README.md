@@ -60,6 +60,7 @@ casperac run --mobile -- curl ifconfig.me
 
 ### 3. Global VPN Mode (System-wide Tor)
 Route your entire operating system (Safari, Chrome, Spotify, OS updates) through the Tor network.
+*(Currently supported on macOS and Linux GNOME desktops).*
 ```bash
 casperac global-on
 ```
