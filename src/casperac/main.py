@@ -20,6 +20,7 @@ BANNER = r"""
 
 custom_theme = Theme({"neon_green": "color(46)", "purple": "color(135)"})
 console = Console(theme=custom_theme)
+err_console = Console(theme=custom_theme, stderr=True)
 
 app = typer.Typer(
     help="CasperAC: A dual-layer network anonymization tool featuring Global VPN, Anti-Detect Engine, and Zero-Config Auto-Deploy.",
@@ -259,8 +260,8 @@ def env_on():
     print(f"export HTTP_USER_AGENT='{ua}'")
 
     # Send instructions to stderr so it doesn't break eval
-    console.print("\n# To apply to your current shell, run:", stderr=True)
-    console.print("# [bold cyan]eval $(casperac env-on)[/bold cyan]", stderr=True)
+    err_console.print("\n# To apply to your current shell, run:")
+    err_console.print("# [bold cyan]eval $(casperac env-on)[/bold cyan]")
 
 
 @app.command()
@@ -271,8 +272,8 @@ def env_off():
     print("unset ALL_PROXY")
     print("unset HTTP_USER_AGENT")
 
-    console.print("\n# To apply to your current shell, run:", stderr=True)
-    console.print("# [bold cyan]eval $(casperac env-off)[/bold cyan]", stderr=True)
+    err_console.print("\n# To apply to your current shell, run:")
+    err_console.print("# [bold cyan]eval $(casperac env-off)[/bold cyan]")
 
 
 if __name__ == "__main__":
