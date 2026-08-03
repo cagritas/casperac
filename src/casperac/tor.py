@@ -82,3 +82,71 @@ def stop_auto_rotate():
     
 def is_auto_rotate_active() -> bool:
     return _ROTATOR_ACTIVE
+
+# --- EXIT NODE COUNTRY SELECTION ---
+def set_exit_country(country_code: str = "Random") -> tuple[bool, str]:
+    """Updates torrc with a specific country code for ExitNodes and restarts Tor."""
+    import os, platform, subprocess
+    
+    os_type = platform.system().lower()
+    if os_type == "darwin":
+        torrc_path = "/opt/homebrew/etc/tor/torrc"
+        if not os.path.exists(torrc_path):
+            torrc_path = "/usr/local/etc/tor/torrc"
+        restart_cmd = ["brew", "services", "restart", "tor"]
+    elif os_type == "linux":
+        torrc_path = "/etc/tor/torrc"
+        restart_cmd = ["sudo", "systemctl", "restart", "tor"]
+    else:
+        return False, "Unsupported OS for country selection."
+
+    if not os.path.exists(torrc_path):
+        return False, f"torrc file not found at {torrc_path}"
+
+    try:
+        # We need to read, remove old ExitNodes, append new
+        # Due to permissions, we'll try direct file access, fallback to sudo is complex, 
+        # but on mac it's usually user-owned. On Linux, we might need sudo.
+        from casperac import sudo
+        
+        # Read contents
+        if os.access(torrc_path, os.R_OK):
+            with open(torrc_path, 'r') as f:
+                lines = f.readlines()
+        else:
+            res = sudo.run_sudo_cmd(["cat", torrc_path])
+            if res.returncode != 0:
+                return False, "Failed to read torrc (Permission denied)."
+            lines = res.stdout.splitlines(True)
+            
+        # Filter out old ExitNodes
+        new_lines = [l for l in lines if not l.startswith("ExitNodes") and not l.startswith("StrictNodes")]
+        
+        if country_code != "Random":
+            new_lines.append(f"\nExitNodes {{{country_code}}}\n")
+            new_lines.append("StrictNodes 1\n")
+            
+        new_content = "".join(new_lines)
+        
+        # Write back
+        if os.access(torrc_path, os.W_OK):
+            with open(torrc_path, 'w') as f:
+                f.write(new_content)
+        else:
+            # Create a temp file and sudo mv it
+            import tempfile
+            fd, tmp_path = tempfile.mkstemp()
+            with open(fd, 'w') as f:
+                f.write(new_content)
+            sudo.run_sudo_cmd(["mv", tmp_path, torrc_path])
+            
+        # Restart Tor
+        if restart_cmd[0] == "sudo":
+            sudo.run_sudo_cmd(restart_cmd[1:])
+        else:
+            subprocess.run(restart_cmd, check=False, capture_output=True)
+            
+        return True, f"Country set to {country_code}. Tor restarted."
+    except Exception as e:
+        return False, str(e)
+

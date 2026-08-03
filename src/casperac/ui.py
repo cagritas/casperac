@@ -97,16 +97,24 @@ class CasperWindow(ctk.CTk):
         )
         self.rotate_switch.grid(row=5, column=0, pady=5)
         
+        # Country Selection
+        self.country_var = ctk.StringVar(value="Random")
+        self.country_dropdown = ctk.CTkOptionMenu(
+            self, values=["Random", "DE (Germany)", "CH (Switzerland)", "US (USA)", "NL (Netherlands)"],
+            variable=self.country_var, command=self.change_country
+        )
+        self.country_dropdown.grid(row=6, column=0, pady=5)
+        
         # Renew IP Button
         self.renew_btn = ctk.CTkButton(
             self, text="Renew IP Identity", command=self.renew_ip,
             fg_color="#8a2be2", hover_color="#5a189a" # Purple colors
         )
-        self.renew_btn.grid(row=6, column=0, pady=10)
+        self.renew_btn.grid(row=7, column=0, pady=10)
         
         # Logs / Info Box
         self.log_box = ctk.CTkTextbox(self, width=300, height=130, state="disabled")
-        self.log_box.grid(row=7, column=0, pady=15)
+        self.log_box.grid(row=8, column=0, pady=15)
         
         self.log("CasperAC GUI Initialized.")
         
@@ -216,6 +224,22 @@ class CasperWindow(ctk.CTk):
         data = tor.get_tor_status()
         if data.get("IsTor"):
             self.log(f"Yeni IP: {data.get('IP')}")
+
+    def change_country(self, choice):
+        country_code = "Random"
+        if choice != "Random":
+            country_code = choice.split(" ")[0].lower() # e.g. "de"
+            
+        self.log(f"Çıkış ülkesi {choice} olarak ayarlanıyor, Tor yeniden başlatılacak...")
+        threading.Thread(target=self._change_country, args=(country_code,), daemon=True).start()
+        
+    def _change_country(self, code):
+        success, msg = tor.set_exit_country(code)
+        if success:
+            self.log(f"✅ {msg}")
+            self.after(2000, self.update_status)
+        else:
+            self.log(f"❌ Hata: {msg}")
 
     def toggle_vpn(self):
         if self.vpn_switch.get() == 1:
