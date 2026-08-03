@@ -6,17 +6,47 @@ import pystray
 import customtkinter as ctk
 
 from casperac import globalvpn, tor, warp, autodeploy
+from casperac import sudo, killswitch
 
 # --- THEME & SETUP ---
 ctk.set_appearance_mode("Dark")
 ctk.set_default_color_theme("green")
+
+class SudoDialog(ctk.CTkToplevel):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.geometry("380x250")
+        self.title("Security Authorization")
+        self.attributes("-topmost", True)
+        self.password = None
+        
+        self.label = ctk.CTkLabel(self, text="⚠️ Yetkilendirme Gerekiyor", font=ctk.CTkFont(size=16, weight="bold"), text_color="yellow")
+        self.label.pack(pady=(20, 5))
+        
+        self.info = ctk.CTkLabel(self, text="Kill-Switch gibi sistem ağını koruyan derin\nmüdahaleler için Mac/Linux yönetici şifreniz gereklidir.", justify="center")
+        self.info.pack(pady=5)
+        
+        self.pwd_entry = ctk.CTkEntry(self, show="*", width=200, placeholder_text="Yönetici Şifresi (Sudo)")
+        self.pwd_entry.pack(pady=15)
+        self.pwd_entry.bind("<Return>", lambda event: self.submit())
+        
+        self.submit_btn = ctk.CTkButton(self, text="Yetki Ver", command=self.submit, fg_color="#8a2be2", hover_color="#5a189a")
+        self.submit_btn.pack(pady=5)
+        
+    def submit(self):
+        self.password = self.pwd_entry.get()
+        self.destroy()
+        
+    def get_password(self):
+        self.wait_window()
+        return self.password
 
 class CasperWindow(ctk.CTk):
     def __init__(self):
         super().__init__()
 
         self.title("CasperAC - Ghost Console")
-        self.geometry("320x450")
+        self.geometry("340x550")
         self.resizable(False, False)
         
         # Grid layout
@@ -26,11 +56,11 @@ class CasperWindow(ctk.CTk):
         self.title_label = ctk.CTkLabel(
             self, text="CASPER AC", font=ctk.CTkFont(size=24, weight="bold")
         )
-        self.title_label.grid(row=0, column=0, pady=(20, 10))
+        self.title_label.grid(row=0, column=0, pady=(15, 10))
         
         # Status Frame
         self.status_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.status_frame.grid(row=1, column=0, pady=10)
+        self.status_frame.grid(row=1, column=0, pady=5)
         
         self.tor_status = ctk.CTkLabel(self.status_frame, text="Tor: Checking...", text_color="yellow")
         self.tor_status.grid(row=0, column=0, padx=10)
@@ -43,20 +73,38 @@ class CasperWindow(ctk.CTk):
             self, text="Global VPN Mode", command=self.toggle_vpn,
             font=ctk.CTkFont(size=14, weight="bold")
         )
-        self.vpn_switch.grid(row=2, column=0, pady=(20, 10))
+        self.vpn_switch.grid(row=2, column=0, pady=(15, 5))
+        
+        # Kill-Switch Toggle
+        self.ks_switch = ctk.CTkSwitch(
+            self, text="Kill-Switch (Ağ Kesici)", command=self.toggle_killswitch,
+            font=ctk.CTkFont(size=14, weight="bold"), button_color="red", button_hover_color="darkred"
+        )
+        self.ks_switch.grid(row=3, column=0, pady=5)
+        
+        # Restore Network Button (Hidden by default)
+        self.restore_btn = ctk.CTkButton(
+            self, text="Ağı Geri Yükle (Restore)", command=self.restore_network,
+            fg_color="red", hover_color="darkred"
+        )
+        self.restore_btn.grid(row=4, column=0, pady=5)
+        self.restore_btn.grid_remove() # Hide initially
         
         # Renew IP Button
         self.renew_btn = ctk.CTkButton(
             self, text="Renew IP Identity", command=self.renew_ip,
             fg_color="#8a2be2", hover_color="#5a189a" # Purple colors
         )
-        self.renew_btn.grid(row=3, column=0, pady=10)
+        self.renew_btn.grid(row=5, column=0, pady=10)
         
         # Logs / Info Box
-        self.log_box = ctk.CTkTextbox(self, width=280, height=120, state="disabled")
-        self.log_box.grid(row=4, column=0, pady=20)
+        self.log_box = ctk.CTkTextbox(self, width=300, height=130, state="disabled")
+        self.log_box.grid(row=6, column=0, pady=15)
         
         self.log("CasperAC GUI Initialized.")
+        
+        # Check if killswitch triggered
+        self.check_killswitch_trigger()
         
         # Initial Status Update
         self.update_status()
@@ -81,11 +129,66 @@ class CasperWindow(ctk.CTk):
         else:
             self.vpn_status.configure(text="Global VPN: Offline", text_color="red")
             self.vpn_switch.deselect()
+            
+        if killswitch.is_active():
+            self.ks_switch.select()
+        else:
+            self.ks_switch.deselect()
+            
+    def check_killswitch_trigger(self):
+        if killswitch.is_triggered():
+            self.log("⚠️ KILL-SWITCH TETİKLENDİ! Ağ Koptu.")
+            self.ks_switch.deselect()
+            self.restore_btn.grid() # Show restore button
+        
+        self.after(2000, self.check_killswitch_trigger)
+
+    def request_sudo(self):
+        """Asks for sudo password if not already cached."""
+        if sudo.has_password():
+            return True
+            
+        dialog = SudoDialog(self)
+        pwd = dialog.get_password()
+        
+        if pwd:
+            if sudo.verify_password(pwd):
+                sudo.set_password(pwd)
+                self.log("Sudo yetkisi doğrulandı.")
+                return True
+            else:
+                self.log("Hata: Sudo şifresi yanlış!")
+                return False
+        return False
+
+    def toggle_killswitch(self):
+        if self.ks_switch.get() == 1:
+            if not self.request_sudo():
+                self.ks_switch.deselect()
+                return
+            
+            self.log("Kill-Switch Aktif Edildi. Tor düşerse ağ anında kesilecek.")
+            killswitch.enable_killswitch()
+        else:
+            self.log("Kill-Switch Kapatıldı.")
+            killswitch.disable_killswitch()
+            
+    def restore_network(self):
+        if not self.request_sudo():
+            return
+        
+        self.log("Ağ bağlantıları geri yükleniyor...")
+        threading.Thread(target=self._restore_network, daemon=True).start()
+        
+    def _restore_network(self):
+        killswitch.restore_network()
+        self.log("Ağ başarıyla geri yüklendi.")
+        # Hide button in main thread
+        self.after(0, self.restore_btn.grid_remove)
 
     def toggle_vpn(self):
         if self.vpn_switch.get() == 1:
             self.log("Enabling Global VPN...")
-            # Run in thread to not freeze GUI
             threading.Thread(target=self._enable_vpn, daemon=True).start()
         else:
             self.log("Disabling Global VPN...")
@@ -128,7 +231,6 @@ class CasperWindow(ctk.CTk):
 
 
 def create_tray_icon_image():
-    # Create a 64x64 image with a dark purple background and neon green 'C'
     image = Image.new('RGB', (64, 64), color=(30, 0, 50))
     d = ImageDraw.Draw(image)
     d.arc([10, 10, 54, 54], start=45, end=315, fill=(0, 255, 0), width=8)
@@ -136,13 +238,11 @@ def create_tray_icon_image():
 
 
 def start_window():
-    """Starts the CustomTkinter GUI. Called as a separate process."""
     app = CasperWindow()
     app.mainloop()
 
 
 def on_open_clicked(icon, item):
-    # Launch the GUI in a new process to avoid macOS thread blocking issues
     subprocess.Popen(["casperac", "window"])
 
 
@@ -151,7 +251,6 @@ def on_quit_clicked(icon, item):
 
 
 def start_tray():
-    """Starts the pystray system tray icon."""
     image = create_tray_icon_image()
     menu = pystray.Menu(
         pystray.MenuItem('Open CasperAC', on_open_clicked, default=True),
