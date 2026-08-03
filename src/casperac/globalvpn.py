@@ -116,6 +116,12 @@ def enable_global_vpn(host: str = "127.0.0.1", port: int = 9050) -> tuple[bool, 
                     check=True,
                     capture_output=True,
                 )
+                # DNS Leak Protection: Force Cloudflare DNS
+                subprocess.run(
+                    ["networksetup", "-setdnsservers", service, "1.1.1.1", "1.0.0.1"],
+                    check=False,
+                    capture_output=True,
+                )
                 success = True
             except subprocess.CalledProcessError:
                 pass
@@ -177,6 +183,12 @@ def disable_global_vpn() -> tuple[bool, str]:
                 subprocess.run(
                     ["networksetup", "-setsocksfirewallproxystate", service, "off"],
                     check=True,
+                    capture_output=True,
+                )
+                # Remove custom DNS
+                subprocess.run(
+                    ["networksetup", "-setdnsservers", service, "Empty"],
+                    check=False,
                     capture_output=True,
                 )
                 success = True
