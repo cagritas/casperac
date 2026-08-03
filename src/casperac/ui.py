@@ -90,16 +90,23 @@ class CasperWindow(ctk.CTk):
         self.restore_btn.grid(row=4, column=0, pady=5)
         self.restore_btn.grid_remove() # Hide initially
         
+        # Auto-Rotate Toggle
+        self.rotate_switch = ctk.CTkSwitch(
+            self, text="Auto-Rotate IP (5 dk)", command=self.toggle_rotate,
+            font=ctk.CTkFont(size=14, weight="bold")
+        )
+        self.rotate_switch.grid(row=5, column=0, pady=5)
+        
         # Renew IP Button
         self.renew_btn = ctk.CTkButton(
             self, text="Renew IP Identity", command=self.renew_ip,
             fg_color="#8a2be2", hover_color="#5a189a" # Purple colors
         )
-        self.renew_btn.grid(row=5, column=0, pady=10)
+        self.renew_btn.grid(row=6, column=0, pady=10)
         
         # Logs / Info Box
         self.log_box = ctk.CTkTextbox(self, width=300, height=130, state="disabled")
-        self.log_box.grid(row=6, column=0, pady=15)
+        self.log_box.grid(row=7, column=0, pady=15)
         
         self.log("CasperAC GUI Initialized.")
         
@@ -185,6 +192,30 @@ class CasperWindow(ctk.CTk):
         self.log("Ağ başarıyla geri yüklendi.")
         # Hide button in main thread
         self.after(0, self.restore_btn.grid_remove)
+        
+    def toggle_rotate(self):
+        if self.rotate_switch.get() == 1:
+            self.log("Auto-Rotate Aktif (5 dakikada bir yenilenecek).")
+            tor.start_auto_rotate(5, self._on_auto_rotate)
+        else:
+            self.log("Auto-Rotate Kapatıldı.")
+            tor.stop_auto_rotate()
+            
+    def _on_auto_rotate(self, success):
+        if success:
+            self.log("🔄 Otomatik IP rotasyonu başarılı!")
+            # Delay fetch slightly
+            self.after(2000, self._fetch_ip_background)
+        else:
+            self.log("🔄 Otomatik IP yenileme başarısız.")
+            
+    def _fetch_ip_background(self):
+        threading.Thread(target=self._do_fetch_ip, daemon=True).start()
+        
+    def _do_fetch_ip(self):
+        data = tor.get_tor_status()
+        if data.get("IsTor"):
+            self.log(f"Yeni IP: {data.get('IP')}")
 
     def toggle_vpn(self):
         if self.vpn_switch.get() == 1:
