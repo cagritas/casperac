@@ -286,9 +286,29 @@ class CasperWindow(ctk.CTk):
 
 
 def create_tray_icon_image():
-    image = Image.new('RGB', (64, 64), color=(30, 0, 50))
-    d = ImageDraw.Draw(image)
-    d.arc([10, 10, 54, 54], start=45, end=315, fill=(0, 255, 0), width=8)
+    # Native macOS style: White icon with transparent background and transparent cutouts.
+    # We draw a white ghost by creating an alpha mask.
+    mask = Image.new('L', (64, 64), 0)
+    d = ImageDraw.Draw(mask)
+    
+    # Ghost top dome
+    d.pieslice([16, 12, 48, 44], 180, 0, fill=255)
+    # Ghost middle body
+    d.rectangle([16, 28, 48, 48], fill=255)
+    
+    # Wavy bottom (3 bumps)
+    d.ellipse([16, 42, 26, 52], fill=255)
+    d.ellipse([27, 42, 37, 52], fill=255)
+    d.ellipse([38, 42, 48, 52], fill=255)
+    
+    # Eyes (cut out by drawing 0 / transparent)
+    d.ellipse([22, 24, 28, 34], fill=0)
+    d.ellipse([36, 24, 42, 34], fill=0)
+    
+    # Create the final solid white image and apply the transparent mask
+    image = Image.new('RGBA', (64, 64), (255, 255, 255, 255))
+    image.putalpha(mask)
+    
     return image
 
 
