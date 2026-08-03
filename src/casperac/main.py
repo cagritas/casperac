@@ -276,5 +276,23 @@ def env_off():
     err_console.print("# [bold cyan]eval $(casperac env-off)[/bold cyan]")
 
 
+@app.command()
+def ui():
+    """Starts the CasperAC System Tray Icon and GUI."""
+    print_banner()
+    console.print("[bold green]Starting CasperAC UI in the background...[/bold green]")
+    console.print("Check your system tray / menu bar for the CasperAC icon.")
+    from casperac import ui as casper_ui
+    casper_ui.start_tray()
+
+
+@app.command(hidden=True)
+def window():
+    """Internal command to launch the GUI window process."""
+    from casperac import ui as casper_ui
+    casper_ui.start_window()
+
+
 if __name__ == "__main__":
     app()
+
