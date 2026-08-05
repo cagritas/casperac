@@ -284,22 +284,36 @@ def ui():
     console.print("Check your system tray / menu bar for the CasperAC icon.")
     try:
         from casperac import ui as casper_ui
+
         casper_ui.start_tray()
     except ImportError as e:
         if "_tkinter" in str(e) or "tkinter" in str(e):
-            err_console.print("\n[bold red]Hata:[/bold red] Python Tkinter modülü sisteminizde kurulu değil.")
-            err_console.print("Grafik arayüzünü (GUI) başlatmak için Python'un görsel arayüz kütüphanesine ihtiyacınız var.\n")
-            
+            err_console.print(
+                "\n[bold red]Hata:[/bold red] Python Tkinter modülü sisteminizde kurulu değil."
+            )
+            err_console.print(
+                "Grafik arayüzünü (GUI) başlatmak için Python'un görsel arayüz kütüphanesine ihtiyacınız var.\n"
+            )
+
             import platform
+
             os_type = platform.system().lower()
             if os_type == "darwin":
-                err_console.print("Mac kullanıcısı (Homebrew) olarak terminale şunu yazın:")
+                err_console.print(
+                    "Mac kullanıcısı (Homebrew) olarak terminale şunu yazın:"
+                )
                 err_console.print("👉 [bold cyan]brew install python-tk[/bold cyan]")
             elif os_type == "linux":
-                err_console.print("Debian/Ubuntu kullanıcısı olarak terminale şunu yazın:")
-                err_console.print("👉 [bold cyan]sudo apt install python3-tk[/bold cyan]")
+                err_console.print(
+                    "Debian/Ubuntu kullanıcısı olarak terminale şunu yazın:"
+                )
+                err_console.print(
+                    "👉 [bold cyan]sudo apt install python3-tk[/bold cyan]"
+                )
             else:
-                err_console.print("Lütfen işletim sisteminiz için 'python-tk' paketini kurun.")
+                err_console.print(
+                    "Lütfen işletim sisteminiz için 'python-tk' paketini kurun."
+                )
             raise typer.Exit(code=1)
         else:
             raise
@@ -310,12 +324,13 @@ def window():
     """Internal command to launch the GUI window process."""
     try:
         from casperac import ui as casper_ui
+
         casper_ui.start_window()
     except ImportError:
         import sys
+
         sys.exit(1)
 
 
 if __name__ == "__main__":
     app()
-
