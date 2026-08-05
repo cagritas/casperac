@@ -6,6 +6,7 @@
   <p><strong>Advanced Dual-Layer Network Anonymization CLI</strong></p>
 
   <p>
+    <a href="https://pepy.tech/project/casperac"><img src="https://static.pepy.tech/badge/casperac" alt="Downloads"></a>
     <a href="https://github.com/cagritas/casperac/actions"><img src="https://img.shields.io/github/actions/workflow/status/cagritas/casperac/ci.yml?branch=main" alt="Build Status"></a>
     <a href="https://pypi.org/project/casperac/"><img src="https://img.shields.io/pypi/v/casperac.svg" alt="PyPI Version"></a>
     <a href="https://pypi.org/project/casperac/"><img src="https://img.shields.io/pypi/pyversions/casperac.svg" alt="Python Versions"></a>
@@ -77,15 +78,23 @@ sequenceDiagram
 ## ✨ Features
 
 - 🚀 **Zero-Config Auto-Deploy:** If Tor or Cloudflare WARP are not installed, CasperAC automatically downloads, installs, and configures them for you via system package managers (Homebrew/APT).
+- 🖥️ **Native Desktop GUI:** A sleek, dark-themed Mac & Linux desktop control panel running directly from your System Tray.
 - 🛡️ **Dual-Layer Security:** Combines Cloudflare WARP with Tor for ISP-blind, exit-node-anonymized traffic.
-- 🌍 **Global VPN Mode:** Instantly route your entire operating system (all browsers and apps) through the Tor network with a single command (`casperac global-on`).
-- 🕵️‍♂️ **Anti-Detect Engine:** Intelligently evades bot-protection (like Cloudflare) by dynamically injecting realistic browser fingerprints (User-Agents, sec-ch-ua, Accept-Language) into terminal commands.
-- 🔄 **Dynamic IP Rotation:** Effortlessly renew your Tor circuit with a single command to get a fresh IP address.
-- 💻 **Environment Management:** Easily export or unset proxy environment variables for your current active shell session.
+- 🌍 **Global VPN Mode & Country Selection:** Route your entire OS through Tor. Pick your desired Exit Node country (e.g. Germany, USA) directly from the UI.
+- 🔒 **Kill-Switch & Zero-Leak DNS:** Deep OS-level firewall integration that instantly cuts your internet if Tor drops, ensuring your real IP and DNS never leak.
+- 🕵️‍♂️ **Anti-Detect Engine:** Intelligently evades bot-protection (like Cloudflare) by dynamically injecting realistic browser fingerprints.
+- 🔄 **Auto-Rotator:** Automatically change your identity and IP address every few minutes in the background.
 
 ## 🚀 Usage
 
-### 1. Status Check & Auto-Deploy
+### 1. Desktop Interface (GUI) 🖥️
+CasperAC now includes a sleek, system-tray native desktop interface for macOS and Linux!
+```bash
+casperac ui
+```
+This launches the CasperAC Control Panel where you can toggle the Global VPN, activate the Kill-Switch, select specific Exit Node countries, and enable Auto-IP rotation.
+
+### 2. Status Check & Auto-Deploy
 Check your network status. If Tor or WARP is missing, CasperAC will auto-deploy them.
 ```bash
 casperac status
