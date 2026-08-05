@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import subprocess
 
 _SUDO_PASSWORD: str | None = None
@@ -12,7 +13,6 @@ def has_password() -> bool:
 
 def run_sudo_cmd(cmd_list: list[str]) -> subprocess.CompletedProcess:
     """Runs a sudo command using the cached password via stdin."""
-    global _SUDO_PASSWORD
     if not _SUDO_PASSWORD:
         raise ValueError("Sudo password not set!")
         

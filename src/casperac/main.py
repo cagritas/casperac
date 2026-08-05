@@ -302,7 +302,7 @@ def ui():
                 err_console.print("Lütfen işletim sisteminiz için 'python-tk' paketini kurun.")
             raise typer.Exit(code=1)
         else:
-            raise e
+            raise
 
 
 @app.command(hidden=True)

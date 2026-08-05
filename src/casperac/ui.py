@@ -1,12 +1,11 @@
 import subprocess
-import sys
 import threading
-from PIL import Image, ImageDraw
-import pystray
-import customtkinter as ctk
 
-from casperac import globalvpn, tor, warp, autodeploy
-from casperac import sudo, killswitch
+import customtkinter as ctk
+import pystray
+from PIL import Image, ImageDraw
+
+from casperac import autodeploy, globalvpn, killswitch, sudo, tor
 
 # --- THEME & SETUP ---
 ctk.set_appearance_mode("Dark")
@@ -312,7 +311,18 @@ def create_tray_icon_image():
     return image
 
 
+def hide_dock_icon():
+    import platform
+    if platform.system().lower() == "darwin":
+        try:
+            import AppKit
+            # NSApplicationActivationPolicyAccessory = 1
+            AppKit.NSApplication.sharedApplication().setActivationPolicy_(1)
+        except ImportError:
+            pass
+
 def start_window():
+    hide_dock_icon()
     app = CasperWindow()
     app.mainloop()
 
@@ -326,6 +336,7 @@ def on_quit_clicked(icon, item):
 
 
 def start_tray():
+    hide_dock_icon()
     image = create_tray_icon_image()
     menu = pystray.Menu(
         pystray.MenuItem('Open CasperAC', on_open_clicked, default=True),

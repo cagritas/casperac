@@ -1,7 +1,9 @@
 from __future__ import annotations
+
 import threading
 import time
-from casperac import tor, sudo
+
+from casperac import sudo, tor
 from casperac.globalvpn import get_active_network_services
 
 _KILL_SWITCH_ACTIVE = False

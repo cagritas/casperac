@@ -3,7 +3,9 @@ from __future__ import annotations
 import socket
 import threading
 import time
+
 import requests
+
 
 def is_tor_listening(host: str = "127.0.0.1", port: int = 9050) -> bool:
     """Checks if the Tor SOCKS port is listening."""
@@ -55,7 +57,6 @@ _ROTATOR_THREAD = None
 _ROTATOR_INTERVAL = 300 # seconds
 
 def _rotation_loop(callback):
-    global _ROTATOR_ACTIVE, _ROTATOR_INTERVAL
     while _ROTATOR_ACTIVE:
         # Sleep in small chunks to allow quick cancellation
         for _ in range(_ROTATOR_INTERVAL):
@@ -86,7 +87,9 @@ def is_auto_rotate_active() -> bool:
 # --- EXIT NODE COUNTRY SELECTION ---
 def set_exit_country(country_code: str = "Random") -> tuple[bool, str]:
     """Updates torrc with a specific country code for ExitNodes and restarts Tor."""
-    import os, platform, subprocess
+    import os
+    import platform
+    import subprocess
     
     os_type = platform.system().lower()
     if os_type == "darwin":
@@ -147,6 +150,6 @@ def set_exit_country(country_code: str = "Random") -> tuple[bool, str]:
             subprocess.run(restart_cmd, check=False, capture_output=True)
             
         return True, f"Country set to {country_code}. Tor restarted."
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         return False, str(e)
 
